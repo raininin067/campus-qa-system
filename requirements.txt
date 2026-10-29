@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+httpx
+python-dotenv
+chromadb
+sentence-transformers
+langgraph
+langchain-core
+openai
+pydantic-settings

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>校园智答 - 智能咨询系统</title>
+    <style>
+        body { font-family: 'Microsoft YaHei', sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; height: 100vh; margin: 0; }
+        .chat-container { width: 100%; max-width: 800px; background: white; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header { background: #2c3e50; color: white; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; }
+        .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .message { padding: 12px 16px; border-radius: 8px; max-width: 80%; line-height: 1.5; white-space: pre-wrap; }
+        .user-message { background: #007bff; color: white; align-self: flex-end; border-bottom-right-radius: 0; }
+        .bot-message { background: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 0; }
+        .input-area { display: flex; padding: 20px; border-top: 1px solid #ddd; background: #fff; }
+        input[type="text"] { flex: 1; padding: 15px; border: 1px solid #ccc; border-radius: 4px; outline: none; font-size: 16px; }
+        button { padding: 15px 30px; margin-left: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="header">🎓 校园智答 (招生/教务咨询)</div>
+    <div class="chat-box" id="chatBox">
+        <div class="message bot-message">你好！我是校园智能助手。你可以问我关于录取分数线、宿舍条件、转专业等问题。</div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="请输入你的问题..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">发送</button>
+    </div>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+
+    // 每个浏览器会话生成一个唯一 session_id，用于后端按会话隔离多轮状态
+    const sessionId = "u_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+
+    function handleKeyPress(e) {
+        if (e.key === 'Enter') sendMessage();
+    }
+
+    async function sendMessage() {
+        const query = userInput.value.trim();
+        if (!query) return;
+
+        // 1. 显示用户消息
+        appendMessage(query, 'user-message');
+        userInput.value = '';
+
+        // 2. 创建 AI 消息气泡（先为空，等待填充）
+        const botMessageDiv = appendMessage('', 'bot-message');
+
+        try {
+            // 3. 发送请求给 FastAPI
+            const response = await fetch('http://127.0.0.1:8000/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query, user_id: sessionId })
+            });
+
+            // 4. 接收流式数据（打字机效果）
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const text = decoder.decode(value, { stream: true });
+                botMessageDiv.textContent += text;
+                chatBox.scrollTop = chatBox.scrollHeight; // 自动滚动到底部
+            }
+        } catch (error) {
+            botMessageDiv.textContent = "⚠️ 网络连接失败，请检查后端是否启动。";
+        }
+    }
+
+    function appendMessage(text, className) {
+        const div = document.createElement('div');
+        div.className = `message ${className}`;
+        div.textContent = text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        return div;
+    }
+</script>
+
+</body>
+</html>

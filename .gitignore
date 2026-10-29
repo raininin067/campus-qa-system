@@ -1,0 +1,25 @@
+# 密钥
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# 运行产物 / 临时文件
+.tmp/
+data/
+*.log
+*.db
+
+# Docker
+.dockerignore

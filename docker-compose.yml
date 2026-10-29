@@ -1,0 +1,12 @@
+services:
+  campus-ai:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_BASE_URL=http://host.docker.internal:11434/v1
+      - LLM_API_KEY=ollama
+      - LLM_MODEL=qwen2.5:7b
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
