@@ -96,6 +96,5 @@ docker-compose up -d
 | `/admin/tenant` | POST | 创建/更新学校知识库 |
 | `/admin/tenants` | GET | 查看所有学校 |
 
-## 📝 License
-
-MIT
+###5.📸 效果截图
+<img width="2560" height="1344" alt="image" src="https://github.com/user-attachments/assets/64b0ec57-cd2d-4d58-941f-ac7f90dbe138" />
